@@ -1,0 +1,47 @@
+<html>
+    <head> 
+        <script src="https://d3js.org/d3.v7.min.js"></script> 
+        <script src="https://d3js.org/topojson.v3.min.js"></script>
+        <style>
+            .gridlines line {
+              stroke: grey;
+            }
+            .gridlines .domain {
+              stroke: grey;
+            }
+        </style>
+    </head>
+    <body>
+    <h1> V1: World Map of ...</h1>
+    <!-- reference jeff's notes -->
+    <svg id="choropleth" height="600" width="900" style="background: #445; margin-top:50px" ></svg>
+    <svg id="colorLegend" height="100" width="600" style="background: #fff; margin-top:30px" ></svg>
+
+    <script>
+        const svg = d3.select("#choropleth");
+        const width = svg.attr("width");
+        const height = svg.attr("height");
+        const margin = { top: 20, right: 20, bottom: 20, left:20};
+        const mapWidth = width - margin.left - margin.right;
+        const mapHeight = height - margin.top - margin.bottom;
+        const map = svg.append("g").attr("transform","translate("+margin.left+","+margin.top+")");
+
+        var dataset; 
+        d3.json('data.json').then( (data) => {
+            dataset = data;
+            
+            data.forEach( d => {
+                d['per_modern'] = Number(d['per_modern']);
+                d['per_na'] = Number(d['per_na']);
+                d['per_nomethod'] = Number(d['per_nomethod']);
+                d['per_traditional'] = Number(d['per_traditional']);
+            });
+
+
+
+            
+        });
+    </script>
+    </p>
+    </body>
+</html>
