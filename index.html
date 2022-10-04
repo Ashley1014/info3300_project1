@@ -29,18 +29,29 @@
         var dataset; 
         d3.json('data.json').then( (data) => {
             dataset = data;
-            
+            console.log(data);
             data.forEach( d => {
                 d['per_modern'] = Number(d['per_modern']);
                 d['per_na'] = Number(d['per_na']);
                 d['per_nomethod'] = Number(d['per_nomethod']);
                 d['per_traditional'] = Number(d['per_traditional']);
+                // create variable to be visualized on the map
+                d['per_unmet'] = Number(d['per_nomethod'] + d['per_traditional']);
             });
 
-
-
+            //sequential color scale 
+            const unmetExtent = d3.extent(data, d => d['per_unmet']);
+            console.log(unmetExtent);
+                
+            var colorScale = d3.scaleSequential(unmetExtent, d3.interpolateRdPu);
+            console.log(colorScale(0.20));
             
         });
+
+        const requestData = async function() {
+            const world = await d3.json("custom.geo.json");
+            console.log(world);
+        }
     </script>
     </p>
     </body>
