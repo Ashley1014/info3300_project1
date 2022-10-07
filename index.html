@@ -54,5 +54,90 @@
         }
     </script>
     </p>
+    <p>
+        <strong> V2: The relationship and correlation between % Desire to get Pregnant and % Access to Adequate Contraception</strong>
+        </br>
+        <svg id="scatterplot" height="600" width="600" style="border: 2px solid black;"></svg>
+
+        <script>
+            d3.json("data.json").then((data) => {
+                console.log(data);
+                // convert type of data
+                data.forEach( d => {
+                    d['per_modern'] = Number(d['per_modern'])*100;
+                    d['per_na'] = Number(d['per_na'])*100;
+                });
+                // set up the svg
+                const ssvg = d3.select("#scatterplot");
+                const swidth = ssvg.attr("width");
+                const sheight = ssvg.attr("height");
+                const smargin = {top: 10, bottom: 70, left: 70, right: 10};
+                const scatterWidth = swidth - smargin.left - smargin.right;
+                const scatterHeight = sheight - smargin.top - smargin.bottom;
+
+                //building scales for axis
+                const naExtent = d3.extent(data, d => d['per_na']);
+                const modernExtent = d3.extent(data, d => d['per_modern']);
+
+                const naScale = d3.scaleLinear().domain([0,naExtent[1]]).range([scatterWidth, 0]);
+                const modernScale = d3.scaleLinear().domain([0,modernExtent[1]]).range([0, scatterHeight]);
+
+                const continent = d3.scaleOrdinal().domain(["Africa",
+                                                            "Asia",
+                                                            "Latin America and the Caribbean",
+                                                            "Oceania",
+                                                            ])
+                                                            .range(d3.schemeCategory10);
+                
+                let yAxis = d3.axisLeft(naScale);
+                let yGridlines = d3.axisLeft(naScale)
+                                    .tickSize(-scatterWidth-10)
+                                    .tickFormat("");
+                ssvg.append("g")
+                    .attr("class", "y axis")
+                    .attr("transform",`translate(${smargin.left-10},${smargin.top})`)
+                    .call(yAxis);
+                ssvg.append("g")
+                    .attr("class", "y gridlines")
+                    .attr("transform",`translate(${smargin.left-10},${smargin.top})`)
+                    .call(yGridlines);
+                 
+
+                let xAxis = d3.axisBottom(modernScale);
+                let xGridlines = d3.axisBottom(modernScale)
+                                    .tickSize(-scatterHeight-10)
+                                    .tickFormat("");
+                ssvg.append("g")
+                    .attr("class", "x axis")
+                    .attr("transform",`translate(${smargin.left},${scatterHeight+margin.top+10})`,)
+                    .call(xAxis);
+                ssvg.append("g")
+                    .attr("class", "x gridlines")
+                    .attr("transform",`translate(${smargin.left},${scatterHeight+margin.top+10})`,)
+                    .call(xGridlines);
+
+                // double check this code that determines the cy and cx positions of the circle -- pretty sure the y position is messed up rn oops
+                ssvg.selectAll('circle').data(data)
+                    .join("circle")
+                    .attr('r', 4)
+                    .attr('fill', d => continent(d["continent"]))
+                    .attr('cx', d => modernScale(d["per_modern"]) + smargin.left)
+                    .attr('cy', d => naScale(d["per_na"])+ smargin.bottom);
+                
+                // axis name
+                ssvg.append("text")
+                    .attr("x", 150)
+                    .attr("y", scatterHeight + smargin.bottom)
+                    .text("Percent of Women w Access to Modern Contraceptives (%)");
+
+                ssvg.append("text")
+                    .attr("text-anchor", "middle")
+                    .attr("x", -scatterWidth/2)
+                    .attr("y", 25)
+                    .attr("transform", "rotate(-90)")
+                    .text("Percent of Women who want to get Pregnant (%)");
+                });
+        </script>
+    </p>
     </body>
 </html>
