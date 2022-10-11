@@ -2,12 +2,30 @@
     <head> 
         <script src="https://d3js.org/d3.v7.min.js"></script> 
         <script src="https://d3js.org/topojson.v3.min.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/d3-legend/2.13.0/d3-legend.js"></script>
         <style>
             .gridlines line {
               stroke: grey;
             }
             .gridlines .domain {
               stroke: grey;
+            }
+
+            .country {
+                fill: lightgrey;
+            }
+            .outline {
+                fill: none;
+                stroke: black;
+                stroke-width: 1px;
+            }
+            .graticule {
+                fill: none;
+                stroke: grey;
+                stroke-width: 1px;
+            }
+            .tooltip {
+                pointer-events: none;
             }
         </style>
     </head>
@@ -49,14 +67,69 @@
         });
 
         const requestData = async function() {
-            const world = await d3.json("custom.geo.json");
+            const world = await d3.json("./custom.geo.json");
             console.log(world);
+
+            var countries = topojson.feature(world, world);
+            var countriesMesh = topojson.mesh(world, world);
+            var projection = d3.geoAlbers().fitSize([mapWidth, mapHeight], countries);
+            var path = d3.geoPath().projection(projection);
+            console.log(countries);
+            console.log(countriesMesh);
+
+            let graticule = d3.geoGraticule10();
+            console.log(graticule);
+            map.append("path").attr("class","graticule").attr("d", path(graticule));
+
+
+
         }
+        requestData();
     </script>
+
+    <p>
+        <svg id="barchart" height="600" width="600" style="border: 2px solid black;">
+        </svg>
+
+        <script>
+            d3.json("data.json").then((data) => {
+                console.log("testing bar chart");
+                console.log(data);
+
+                data.forEach( d => {
+                    d['per_modern'] = Number(d['per_modern'])*100;
+                    d['per_na'] = Number(d['per_na'])*100;
+                });
+
+                const bsvg = d3.select("#barchart");
+                const bwidth = bsvg.attr("width");
+                const bheight = bsvg.attr("height");
+                const bmargin = {top: 10, bottom: 70, left: 70, right: 10};
+                const barWidth = bwidth - bmargin.left - bmargin.right;
+                const barHeight = bheight - bmargin.top - bmargin.bottom;
+
+                var xScale = d3.scaleBand().range([0, barWidth]);
+                var yScale = d3.scaleLinear().range([barHeight, 0]);
+
+                bsvg.append("g")
+                    .attr("transform", "translate(" + 100 + "," + 100 + ")");
+
+
+
+
+
+
+
+            });
+        </script>
+
+
+
     </p>
+
     <p>
         <strong> V2: The relationship and correlation between % Desire to get Pregnant and % Access to Adequate Contraception</strong>
-        </br>
+        <br/>
         <svg id="scatterplot" height="600" width="600" style="border: 2px solid black;"></svg>
 
         <script>
@@ -136,6 +209,24 @@
                     .attr("y", 25)
                     .attr("transform", "rotate(-90)")
                     .text("Percent of Women who want to get Pregnant (%)");
+
+                const legend =
+                    d3.legendColor()
+                    .shape("path", d3.symbol().type(d3.symbolCircle).size(25)()) //.shape("circle")
+                    .shapePadding(15)
+                    .labelOffset(5)
+                    .scale(continent)
+                    .labels(["Africa",
+                        "Asia",
+                        "Latin America and the Caribbean",
+                        "Oceania",
+                    ]);
+
+                ssvg.append("g")
+                    .style('font-size', 12)
+                    .style('font-family', 'sans-serif')
+                    .attr("transform", `translate(${scatterWidth - 3 * margin.right}, ${margin.top})`)
+                    .call(legend)
                 });
         </script>
     </p>
