@@ -199,16 +199,26 @@
                 
                 // axis name
                 ssvg.append("text")
-                    .attr("x", 150)
+                    .attr("x", scatterWidth/4)
                     .attr("y", scatterHeight + smargin.bottom)
                     .text("Percent of Women w Access to Modern Contraceptives (%)");
 
                 ssvg.append("text")
                     .attr("text-anchor", "middle")
                     .attr("x", -scatterWidth/2)
-                    .attr("y", 25)
+                    .attr("y", scatterHeight/20)
                     .attr("transform", "rotate(-90)")
                     .text("Percent of Women who want to get Pregnant (%)");
+
+                // Legend
+                ssvg.append("rect")
+                    .attr("x", scatterWidth - 130)
+                    .attr("y", margin.top - 10)
+                    .attr("height", 100)
+                    .attr("width", 200)
+                    .style("stroke", "white")
+                    .style("stroke-width","1")
+                    .style("fill", 'white');
 
                 const legend =
                     d3.legendColor()
@@ -221,11 +231,10 @@
                         "Latin America and the Caribbean",
                         "Oceania",
                     ]);
-
                 ssvg.append("g")
                     .style('font-size', 12)
                     .style('font-family', 'sans-serif')
-                    .attr("transform", `translate(${scatterWidth - 3 * margin.right}, ${margin.top})`)
+                    .attr("transform", `translate(${scatterWidth - 6 * margin.right}, ${margin.top})`)
                     .call(legend)
                 });
         </script>
