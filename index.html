@@ -108,11 +108,34 @@
                 const barWidth = bwidth - bmargin.left - bmargin.right;
                 const barHeight = bheight - bmargin.top - bmargin.bottom;
 
-                var xScale = d3.scaleBand().range([0, barWidth]);
-                var yScale = d3.scaleLinear().range([barHeight, 0]);
+                var x0 = d3.scaleBand()
+                    .rangeRound([0, barWidth])
+                    .paddingInner(0.2);
+
+                var x1 = d3.scaleBand()
+                    .padding(0.1);
 
                 bsvg.append("g")
                     .attr("transform", "translate(" + 100 + "," + 100 + ")");
+
+                let subcontinent = data.map(function (d) {return d["sub-cont"];});
+                console.log(subcontinent);
+                let continent = data.map(function (d) {return d["continent"];});
+
+                x0.domain(subcontinent);
+                x1.domain(continent).range([0, x0.bandwidth()]);
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
