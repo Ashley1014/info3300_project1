@@ -149,40 +149,6 @@
                         .ticks(6)
                     );
 
-                // var barG = bsvg.append("g")
-                //     .selectAll("g")
-                //     .data(data)
-                //     .enter()
-                //     .append("g")
-                //     .attr("transform", function(d) { return "translate(" + x0(d["sub-cont"]) + ",0)"; });
-                //
-                // barG.selectAll(".bars-container-middle")
-                //     .data(function(d) { return d; })
-                //     .enter()
-                //     .append("rect")
-                //     .attr("class", function(d) {
-                //         return 'bars-container-middle';
-                //     })
-                //     .attr("transform", "translate(0," + (barHeight / 5) + ")")
-                //     .attr("x", function(d) { return x1(d["continent"]); })
-                //     .attr("y", function(d) { return 0; })
-                //     .attr("width", x1.bandwidth())
-                //     .attr('height', function( d ) {
-                //        return (barHeight / 1.75);
-                //     })
-                //
-                // barG.selectAll(".bars")
-                //     .data(function(d) { return d; })
-                //     .enter()
-                //     .append("rect")
-                //     .attr("class", "bars")
-                //     .attr("transform", "translate(0," + (barHeight / 5) + ")")
-                //     .attr("x", function(d) { return x1(d["continent"]); })
-                //     .attr("width", x1.bandwidth())
-                //     .attr("fill", function(d) { return z(d["continent"]); })
-                //     .attr("y", (barHeight / 2))
-                //     .attr("y", function(d) { return y(d); });
-
                 annotations.append("g")
                     .attr("class", "axis")
                     .attr("transform", "translate(20," + barHeight + ")")
@@ -303,6 +269,7 @@
                 ssvg.append("text")
                     .attr("x", scatterWidth/4)
                     .attr("y", scatterHeight + smargin.bottom)
+                    .style("font-size", 15)
                     .text("Percent of Women w Access to Modern Contraceptives (%)");
 
                 ssvg.append("text")
@@ -310,6 +277,7 @@
                     .attr("x", -scatterWidth/2)
                     .attr("y", scatterHeight/20)
                     .attr("transform", "rotate(-90)")
+                    .style("font-size", 15)
                     .text("Percent of Women who want to get Pregnant (%)");
 
                 // Legend
