@@ -2,6 +2,7 @@
     <head> 
         <script src="https://d3js.org/d3.v7.min.js"></script> 
         <script src="https://d3js.org/topojson.v3.min.js"></script>
+        <scipt src="https://d3js.org/d3-geo-projection.v2.min.js"></script>
         <script src="https://cdnjs.cloudflare.com/ajax/libs/d3-legend/2.13.0/d3-legend.js"></script>
         <style>
             .gridlines line {
@@ -9,6 +10,15 @@
             }
             .gridlines .domain {
               stroke: grey;
+            }
+
+            .grid path {
+                stroke: none;
+            }
+
+            .grid line {
+                stroke: #E0E0E0;
+                shape-rendering: crispEdges;
             }
 
             .country {
@@ -29,70 +39,76 @@
             }
         </style>
     </head>
-    <body>
-    <h1> V1: World Map of ...</h1>
-    <!-- reference jeff's notes -->
-    <svg id="choropleth" height="600" width="900" style="background: #445; margin-top:50px" ></svg>
-    <svg id="colorLegend" height="100" width="600" style="background: #fff; margin-top:30px" ></svg>
+            <p>
+            <h1> V1 attempt: World Map</h1>
+            <svg id="world_map" height="600" width="900" style="background: #445; margin-top:50px" ></svg>
+            <script>
+                const svg = d3.select("#world_map");
+                const width = svg.attr("width");
+                const height = svg.attr("height");
+                const margin = { top: 20, right: 20, bottom: 20, left:20};
+                const mapWidth = width - margin.left - margin.right;
+                const mapHeight = height - margin.top - margin.bottom;
+                const map = svg.append("g")
+                    .attr("transform","translate("+margin.left+","+margin.top+")");
 
-    <script>
-        const svg = d3.select("#choropleth");
-        const width = svg.attr("width");
-        const height = svg.attr("height");
-        const margin = { top: 20, right: 20, bottom: 20, left:20};
-        const mapWidth = width - margin.left - margin.right;
-        const mapHeight = height - margin.top - margin.bottom;
-        const map = svg.append("g").attr("transform","translate("+margin.left+","+margin.top+")");
+                const requestData = async function() {
+                    let world = await d3.json('countries.json');
+                    console.log(world);
 
-        var dataset; 
-        d3.json('data_continent.csv').then( (data) => {
-            dataset = data;
-            console.log(data);
-            
-            
-        });
+                    let countries = topojson.feature(world, world.objects.countries);
+                    console.log(countries)
+                    let countriesMesh = topojson.mesh(world, world.objects.countries);
+                    console.log(countriesMesh)
 
-        const requestData = async function() {
-            const world = await d3.json("./custom.geo.json");
-            console.log(world);
-
-            var countries = topojson.feature(world, world);
-            var countriesMesh = topojson.mesh(world, world);
-            var projection = d3.geoAlbers().fitSize([mapWidth, mapHeight], countries);
-            var path = d3.geoPath().projection(projection);
-            console.log(countries);
-            console.log(countriesMesh);
-
-            let graticule = d3.geoGraticule10();
-            console.log(graticule);
-            map.append("path").attr("class","graticule").attr("d", path(graticule));
+                    const projection = d3.geoNaturalEarth1().fitSize([mapWidth, mapHeight],countries);
+                    const path = d3.geoPath().projection(projection);
 
 
+                    //Pick out topographic features and build d3 helprs
+                    map.selectAll('path.country').data(countries.features)
+                        .join('path')
+                        .attr('class','country')
+                        .attr('note',d => d.id)
+                        .attr('d', path)
 
-        }
-        requestData();
-    </script>
+                    map.append('path').datum(countriesMesh)
+                        .attr('class','outline')
+                        .attr('d',path)
+
+                    //create
+
+
+                };
+                requestData();
+
+            </script>
+            </p>
 
     <p>
         <svg id="barchart" height="600" width="600" style="border: 2px solid black;">
         </svg>
 
         <script>
-            d3.json("data.json").then((data) => {
+            d3.json("data_cont.json").then((data) => {
                 console.log("testing bar chart");
-                console.log(data);
 
                 data.forEach( d => {
-                    d['per_modern'] = Number(d['per_modern'])*100;
-                    d['per_na'] = Number(d['per_na'])*100;
+                    d['per_unmet'] = Number(d['per_unmet'])*100;
                 });
 
+                console.log(data);
                 const bsvg = d3.select("#barchart");
                 const bwidth = bsvg.attr("width");
                 const bheight = bsvg.attr("height");
-                const bmargin = {top: 10, bottom: 70, left: 70, right: 10};
+                const bmargin = {top: 10, right: 10, bottom: 50, left: 50};
                 const barWidth = bwidth - bmargin.left - bmargin.right;
                 const barHeight = bheight - bmargin.top - bmargin.bottom;
+
+                let annotations = bsvg.append("g").attr("id","annotations")
+                    .attr("transform",`translate(${margin.left},${margin.top})`);
+                let chartArea = bsvg.append("g").attr("id","points")
+                    .attr("transform",`translate(${margin.left},${margin.top})`);
 
                 var x0 = d3.scaleBand()
                     .rangeRound([0, barWidth])
@@ -101,15 +117,92 @@
                 var x1 = d3.scaleBand()
                     .padding(0.1);
 
-                bsvg.append("g")
+                let y = d3.scaleLinear()
+                    .range([barHeight, 0]);
+
+                var z = d3.scaleOrdinal()
+                .domain(["Africa",
+                    "Asia",
+                    "Latin America and the Caribbean",
+                    "Oceania",
+                ])
+                    .range(d3.schemeCategory10);
+
+                annotations.append("g")
                     .attr("transform", "translate(" + 100 + "," + 100 + ")");
 
-                let subcontinent = data.map(function (d) {return d["sub-cont"];});
-                console.log(subcontinent);
                 let continent = data.map(function (d) {return d["continent"];});
+                console.log(continent);
+                let subcontinent = data.map(function (d) {return d["sub-cont"];});
+                let valueScale = d3.extent(data, d => d["per_unmet"]);
 
-                x0.domain(subcontinent);
-                x1.domain(continent).range([0, x0.bandwidth()]);
+                x0.domain(continent);
+                x1.domain(subcontinent).range([0, x0.bandwidth()]);
+                y.domain(valueScale);
+
+                annotations.append("g")
+                    .attr("class", "grid")
+                    .attr("transform", "translate(0," + (barHeight / 5) + ")")
+                    .call(d3.axisLeft(y)
+                        .tickSize(-width)
+                        .tickFormat("")
+                        .ticks(6)
+                    );
+
+                // var barG = bsvg.append("g")
+                //     .selectAll("g")
+                //     .data(data)
+                //     .enter()
+                //     .append("g")
+                //     .attr("transform", function(d) { return "translate(" + x0(d["sub-cont"]) + ",0)"; });
+                //
+                // barG.selectAll(".bars-container-middle")
+                //     .data(function(d) { return d; })
+                //     .enter()
+                //     .append("rect")
+                //     .attr("class", function(d) {
+                //         return 'bars-container-middle';
+                //     })
+                //     .attr("transform", "translate(0," + (barHeight / 5) + ")")
+                //     .attr("x", function(d) { return x1(d["continent"]); })
+                //     .attr("y", function(d) { return 0; })
+                //     .attr("width", x1.bandwidth())
+                //     .attr('height', function( d ) {
+                //        return (barHeight / 1.75);
+                //     })
+                //
+                // barG.selectAll(".bars")
+                //     .data(function(d) { return d; })
+                //     .enter()
+                //     .append("rect")
+                //     .attr("class", "bars")
+                //     .attr("transform", "translate(0," + (barHeight / 5) + ")")
+                //     .attr("x", function(d) { return x1(d["continent"]); })
+                //     .attr("width", x1.bandwidth())
+                //     .attr("fill", function(d) { return z(d["continent"]); })
+                //     .attr("y", (barHeight / 2))
+                //     .attr("y", function(d) { return y(d); });
+
+                annotations.append("g")
+                    .attr("class", "axis")
+                    .attr("transform", "translate(20," + barHeight + ")")
+                    .call(d3.axisBottom(x0));
+
+                annotations.append("g")
+                    .selectAll("g")
+                    .data(data)
+                    .enter().append("g")
+                    .attr("transform", function (d) { return "translate(" + x0(d["continent"]) + ",0)"; })
+                    .selectAll("rect")
+                    .data(data)
+                    .join("rect")
+                    .attr("x", function (d) { return x1(d["sub-cont"]); })
+                    .attr("y", function (d) { return y(d["per_unmet"]); })
+                    .attr("width", x1.bandwidth())
+                    .attr("height", function (d) { return barHeight - y(d["per_unmet"]); })
+                    .attr("fill", function (d) { return z(d["continent"]); });
+
+
 
 
 

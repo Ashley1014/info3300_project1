@@ -1,0 +1,296 @@
+<html>
+    <head>
+        <script src="https://d3js.org/d3.v7.min.js"></script>
+        <script src="https://d3js.org/topojson.v3.min.js"></script>
+        <scipt src="https://d3js.org/d3-geo-projection.v2.min.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/d3-legend/2.13.0/d3-legend.js"></script>
+        <style>
+            .gridlines line {
+              stroke: grey;
+            }
+            .gridlines .domain {
+              stroke: grey;
+            }
+
+            .country {
+                fill: lightgrey;
+            }
+            .outline {
+                fill: none;
+                stroke: black;
+                stroke-width: 1px;
+            }
+            .graticule {
+                fill: none;
+                stroke: grey;
+                stroke-width: 1px;
+            }
+            .tooltip {
+                pointer-events: none;
+            }
+        </style>
+    </head>
+    <body>
+
+    <p>
+    <h1> V1 attempt: World Map</h1>
+    <svg id="world_map" height="600" width="900" style="background: #445; margin-top:50px" ></svg>
+    <script>
+    const svg = d3.select("#world_map");
+    const width = svg.attr("width");
+    const height = svg.attr("height");
+    const margin = { top: 20, right: 20, bottom: 20, left:20};
+    const mapWidth = width - margin.left - margin.right;
+    const mapHeight = height - margin.top - margin.bottom;
+    const map = svg.append("g")
+                  .attr("transform","translate("+margin.left+","+margin.top+")");
+
+    const requestData = async function() {
+      let world = await d3.json('countries.json');
+      console.log(world);
+
+    let countries = topojson.feature(world, world.objects.countries);
+    console.log(countries)
+    let countriesMesh = topojson.mesh(world, world.objects.countries);
+    console.log(countriesMesh)
+
+    const projection = d3.geoNaturalEarth1().fitSize([mapWidth, mapHeight],countries);
+    const path = d3.geoPath().projection(projection);
+
+
+    //Pick out topographic features and build d3 helprs
+    map.selectAll('path.country').data(countries.features)
+                                 .join('path')
+                                 .attr('class','country')
+                                 .attr('note',d => d.id)
+                                 .attr('d', path)
+
+  map.append('path').datum(countriesMesh)
+     .attr('class','outline')
+     .attr('d',path)
+
+  //create
+
+
+   };
+    requestData();
+
+
+    </script>
+    </p>
+
+
+    <p>
+    <h1> V1: World Map of ...</h1>
+    <!-- reference jeff's notes -->
+ <svg id="choropleth" height="600" width="900" style="background: #445; margin-top:50px" ></svg>
+    <svg id="colorLegend" height="100" width="600" style="background: #fff; margin-top:30px" ></svg>
+
+    <script>
+        const svg = d3.select("#choropleth");
+        const width = svg.attr("width");
+        const height = svg.attr("height");
+        const margin = { top: 20, right: 20, bottom: 20, left:20};
+        const mapWidth = width - margin.left - margin.right;
+        const mapHeight = height - margin.top - margin.bottom;
+        const map = svg.append("g").attr("transform","translate("+margin.left+","+margin.top+")");
+
+        var dataset;
+        d3.json('data.json').then( (data) => {
+            dataset = data;
+            console.log(data);
+            data.forEach( d => {
+                d['per_modern'] = Number(d['per_modern']);
+                d['per_na'] = Number(d['per_na']);
+                d['per_nomethod'] = Number(d['per_nomethod']);
+                d['per_traditional'] = Number(d['per_traditional']);
+                // create variable to be visualized on the map
+                d['per_unmet'] = Number(d['per_nomethod'] + d['per_traditional']);
+            });
+
+            //sequential color scale
+            const unmetExtent = d3.extent(data, d => d['per_unmet']);
+            console.log(unmetExtent);
+
+            var colorScale = d3.scaleSequential(unmetExtent, d3.interpolateRdPu);
+            console.log(colorScale(0.20));
+
+        });
+
+        const requestData = async function() {
+            const world = await d3.json("./custom.geo.json");
+            console.log(world);
+
+            var countries = topojson.feature(world, world);
+            var countriesMesh = topojson.mesh(world, world);
+            var projection = d3.geoAlbers().fitSize([mapWidth, mapHeight], countries);
+            var path = d3.geoPath().projection(projection);
+            console.log(countries);
+            console.log(countriesMesh);
+
+            let graticule = d3.geoGraticule10();
+            console.log(graticule);
+            map.append("path").attr("class","graticule").attr("d", path(graticule));
+
+
+
+        }
+        requestData();
+    </script>
+
+  </p>
+
+    <p>
+        <svg id="barchart" height="600" width="600" style="border: 2px solid black;">
+        </svg>
+
+        <script>
+            d3.json("data.json").then((data) => {
+                console.log("testing bar chart");
+                console.log(data);
+
+                data.forEach( d => {
+                    d['per_modern'] = Number(d['per_modern'])*100;
+                    d['per_na'] = Number(d['per_na'])*100;
+                });
+
+                const bsvg = d3.select("#barchart");
+                const bwidth = bsvg.attr("width");
+                const bheight = bsvg.attr("height");
+                const bmargin = {top: 10, bottom: 70, left: 70, right: 10};
+                const barWidth = bwidth - bmargin.left - bmargin.right;
+                const barHeight = bheight - bmargin.top - bmargin.bottom;
+
+                var xScale = d3.scaleBand().range([0, barWidth]);
+                var yScale = d3.scaleLinear().range([barHeight, 0]);
+
+                bsvg.append("g")
+                    .attr("transform", "translate(" + 100 + "," + 100 + ")");
+
+
+
+
+
+
+
+            });
+        </script>
+
+
+
+    </p>
+
+    <p>
+        <strong> V2: The relationship and correlation between % Desire to get Pregnant and % Access to Adequate Contraception</strong>
+        <br/>
+        <svg id="scatterplot" height="600" width="600" style="border: 2px solid black;"></svg>
+
+        <script>
+            d3.json("data.json").then((data) => {
+                console.log(data);
+                // convert type of data
+                data.forEach( d => {
+                    d['per_modern'] = Number(d['per_modern'])*100;
+                    d['per_na'] = Number(d['per_na'])*100;
+                });
+                // set up the svg
+                const ssvg = d3.select("#scatterplot");
+                const swidth = ssvg.attr("width");
+                const sheight = ssvg.attr("height");
+                const smargin = {top: 10, bottom: 70, left: 70, right: 10};
+                const scatterWidth = swidth - smargin.left - smargin.right;
+                const scatterHeight = sheight - smargin.top - smargin.bottom;
+
+                //building scales for axis
+                const naExtent = d3.extent(data, d => d['per_na']);
+                const modernExtent = d3.extent(data, d => d['per_modern']);
+
+                const naScale = d3.scaleLinear().domain([0,naExtent[1]]).range([scatterWidth, 0]);
+                const modernScale = d3.scaleLinear().domain([0,modernExtent[1]]).range([0, scatterHeight]);
+
+                const continent = d3.scaleOrdinal().domain(["Africa",
+                                                            "Asia",
+                                                            "Latin America and the Caribbean",
+                                                            "Oceania",
+                                                            ])
+                                                            .range(d3.schemeCategory10);
+
+                let yAxis = d3.axisLeft(naScale);
+                let yGridlines = d3.axisLeft(naScale)
+                                    .tickSize(-scatterWidth-10)
+                                    .tickFormat("");
+                ssvg.append("g")
+                    .attr("class", "y axis")
+                    .attr("transform",`translate(${smargin.left-10},${smargin.top})`)
+                    .call(yAxis);
+                ssvg.append("g")
+                    .attr("class", "y gridlines")
+                    .attr("transform",`translate(${smargin.left-10},${smargin.top})`)
+                    .call(yGridlines);
+
+
+                let xAxis = d3.axisBottom(modernScale);
+                let xGridlines = d3.axisBottom(modernScale)
+                                    .tickSize(-scatterHeight-10)
+                                    .tickFormat("");
+                ssvg.append("g")
+                    .attr("class", "x axis")
+                    .attr("transform",`translate(${smargin.left},${scatterHeight+margin.top+10})`,)
+                    .call(xAxis);
+                ssvg.append("g")
+                    .attr("class", "x gridlines")
+                    .attr("transform",`translate(${smargin.left},${scatterHeight+margin.top+10})`,)
+                    .call(xGridlines);
+
+                // double check this code that determines the cy and cx positions of the circle -- pretty sure the y position is messed up rn oops
+                ssvg.selectAll('circle').data(data)
+                    .join("circle")
+                    .attr('r', 4)
+                    .attr('fill', d => continent(d["continent"]))
+                    .attr('cx', d => modernScale(d["per_modern"]) + smargin.left)
+                    .attr('cy', d => naScale(d["per_na"])+ smargin.bottom);
+
+                // axis name
+                ssvg.append("text")
+                    .attr("x", scatterWidth/4)
+                    .attr("y", scatterHeight + smargin.bottom)
+                    .text("Percent of Women w Access to Modern Contraceptives (%)");
+
+                ssvg.append("text")
+                    .attr("text-anchor", "middle")
+                    .attr("x", -scatterWidth/2)
+                    .attr("y", scatterHeight/20)
+                    .attr("transform", "rotate(-90)")
+                    .text("Percent of Women who want to get Pregnant (%)");
+
+                // Legend
+                ssvg.append("rect")
+                    .attr("x", scatterWidth - 130)
+                    .attr("y", margin.top - 10)
+                    .attr("height", 100)
+                    .attr("width", 200)
+                    .style("stroke", "white")
+                    .style("stroke-width","1")
+                    .style("fill", 'white');
+
+                const legend =
+                    d3.legendColor()
+                    .shape("path", d3.symbol().type(d3.symbolCircle).size(25)()) //.shape("circle")
+                    .shapePadding(15)
+                    .labelOffset(5)
+                    .scale(continent)
+                    .labels(["Africa",
+                        "Asia",
+                        "Latin America and the Caribbean",
+                        "Oceania",
+                    ]);
+                ssvg.append("g")
+                    .style('font-size', 12)
+                    .style('font-family', 'sans-serif')
+                    .attr("transform", `translate(${scatterWidth - 6 * margin.right}, ${margin.top})`)
+                    .call(legend)
+                });
+        </script>
+    </p>
+    </body>
+</html>
