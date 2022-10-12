@@ -1,17 +1,12 @@
 continent,sub-cont,per_unmet
-Africa,Eastern Africa,0.591400639433519
-Africa,Middle Africa,0.6139349917889463
-Africa,Northern Africa,0.6636732673347966
-Africa,Southern Africa,0.35662347661396127
-Africa,Western Africa,0.6314680960675568
-Asia,Central Asia,0.5653848374323519
-Asia,Eastern Asia,0.4310370868171313
-Asia,Southeast Asia,0.6012278819465161
-Asia,Southern Asia,0.5540811849215466
-Asia,Western Asia,0.7136387436918428
-Latin America and the Caribbean,Caribbean,0.4171552163226736
+Latin America and the Caribbean,Caribbean,0.41659517656661876
 Latin America and the Caribbean,Central America,0.4248968067569395
-Latin America and the Caribbean,South America,0.4475754617572486
+Asia,Eastern Asia,0.42746112040156453
+Latin America and the Caribbean,South America,0.4471596392204707
+Asia,Southern Asia,0.5540811849215466
+Asia,Central Asia,0.5653848374323519
+Asia,Southeast Asia,0.6012278819465161
 Oceania,Melanesia,0.672977628054533
-Oceania,Micronesia,0.7316450433454271
-Oceania,Polynesia,0.7208848913393725
+Asia,Western Asia,0.7163186843925708
+Oceania,Polynesia,0.7306489735484686
+Oceania,Micronesia,0.7308584621663724
